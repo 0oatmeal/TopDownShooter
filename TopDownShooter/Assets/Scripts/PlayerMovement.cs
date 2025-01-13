@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
+    private Player _player;
     private PlayerControls _controls;
     private CharacterController _characterController;
     private Animator _animator;
@@ -23,17 +24,15 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 _moveInput;
     private Vector2 _aimInput;
 
-    private void Awake()
-    {
-        AssignInputEvents();
-    }
-
     private void Start()
     {
+        _player = GetComponent<Player>();
         _characterController = GetComponent<CharacterController>();
         _animator = GetComponentInChildren<Animator>();
 
         _speed = runSpeed;
+        
+        AssignInputEvents();
     }
 
     private void Update()
@@ -41,11 +40,6 @@ public class PlayerMovement : MonoBehaviour
         ApplyMovement();
         AimTowardsMouse();
         AnimatorControllers();
-    }
-
-    private void Shoot()
-    {
-        _animator.SetTrigger("Fire");
     }
 
     private void AnimatorControllers()
@@ -71,7 +65,7 @@ public class PlayerMovement : MonoBehaviour
 
             transform.forward = _lookingDirection;
 
-            aim.position = new Vector3(hitInfo.point.x, transform.position.y, hitInfo.point.z);
+            aim.position = new Vector3(hitInfo.point.x, aim.position.y, hitInfo.point.z);
         }
     }
 
@@ -101,9 +95,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void AssignInputEvents()
     {
-        _controls = new PlayerControls();
-
-        _controls.Character.Fire.performed += context => Shoot();
+        _controls = _player.controls;
 
         _controls.Character.Movement.performed += context => _moveInput = context.ReadValue<Vector2>();
         _controls.Character.Movement.canceled += context => _moveInput = Vector2.zero;
@@ -121,15 +113,5 @@ public class PlayerMovement : MonoBehaviour
             _speed = walkSpeed;
             _isRunning = false;
         };
-    }
-
-    private void OnEnable()
-    {
-        _controls.Enable();
-    }
-
-    private void OnDisable()
-    {
-        _controls.Disable();
     }
 }
